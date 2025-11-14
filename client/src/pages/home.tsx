@@ -27,7 +27,7 @@ import type { StoryChapter } from "@shared/schema";
 
 export default function Home() {
   const [isUploading, setIsUploading] = useState(false);
-  const [hoveredImage, setHoveredImage] = useState<{ url: string; rect: DOMRect } | null>(null);
+  const [hoveredImage, setHoveredImage] = useState<{ url: string; rect: DOMRect; isLeftSide: boolean } | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -306,21 +306,18 @@ export default function Home() {
                       
                       <div className={index % 2 === 0 ? 'md:order-2' : 'md:order-1'}>
                         <div 
-                          className="relative group cursor-pointer"
+                          className="relative cursor-pointer"
                           onMouseEnter={(e) => {
                             const rect = e.currentTarget.getBoundingClientRect();
-                            setHoveredImage({ url: chapter.imageUrl, rect });
+                            setHoveredImage({ url: chapter.imageUrl, rect, isLeftSide: index % 2 !== 0 });
                           }}
                           onMouseLeave={() => setHoveredImage(null)}
                         >
                           <img 
                             src={chapter.imageUrl} 
                             alt={`Chapter ${chapter.chapterNumber}`}
-                            className="w-full h-64 md:h-80 object-cover rounded-xl shadow-md transition-all duration-200"
+                            className="w-full h-64 md:h-80 object-cover rounded-xl shadow-md"
                           />
-                          <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 rounded-xl transition-all duration-200 flex items-center justify-center">
-                            <Maximize2 className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
-                          </div>
                         </div>
                       </div>
                     </div>
@@ -334,25 +331,33 @@ export default function Home() {
 
       {/* Image Hover Preview - macOS Style */}
       {hoveredImage && (() => {
-        const { url, rect } = hoveredImage;
+        const { url, rect, isLeftSide } = hoveredImage;
         const viewportWidth = window.innerWidth;
         const viewportHeight = window.innerHeight;
         
-        // Position to the right of the image
+        // Position opposite to text side
         const previewWidth = Math.min(600, viewportWidth * 0.4);
         const previewHeight = Math.min(700, viewportHeight * 0.7);
         
-        let left = rect.right + 20;
+        let left;
         let top = rect.top + (rect.height / 2) - (previewHeight / 2);
         
-        // If too far right, show on left side
-        if (left + previewWidth > viewportWidth - 20) {
+        // If image is on left (text on right), show preview on left
+        // If image is on right (text on left), show preview on right
+        if (isLeftSide) {
+          // Image on left, show preview further left
           left = rect.left - previewWidth - 20;
-        }
-        
-        // If too far left, center it
-        if (left < 20) {
-          left = Math.max(20, (viewportWidth - previewWidth) / 2);
+          if (left < 20) {
+            // Not enough space on left, show on right
+            left = rect.right + 20;
+          }
+        } else {
+          // Image on right, show preview further right
+          left = rect.right + 20;
+          if (left + previewWidth > viewportWidth - 20) {
+            // Not enough space on right, show on left
+            left = rect.left - previewWidth - 20;
+          }
         }
         
         // Keep within viewport vertically

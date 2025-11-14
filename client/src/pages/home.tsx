@@ -342,21 +342,21 @@ export default function Home() {
         let left;
         let top = rect.top + (rect.height / 2) - (previewHeight / 2);
         
-        // If image is on left (text on right), show preview on left
-        // If image is on right (text on left), show preview on right
+        // If image is on left (text on right), show preview further left (away from text)
+        // If image is on right (text on left), show preview further right (away from text)
         if (isLeftSide) {
-          // Image on left, show preview further left
+          // Image on left, text on right - show preview further left (away from text)
           left = rect.left - previewWidth - 20;
           if (left < 20) {
-            // Not enough space on left, show on right
-            left = rect.right + 20;
+            // Not enough space on left
+            left = 20;
           }
         } else {
-          // Image on right, show preview further right
+          // Image on right, text on left - show preview further right (away from text)
           left = rect.right + 20;
           if (left + previewWidth > viewportWidth - 20) {
-            // Not enough space on right, show on left
-            left = rect.left - previewWidth - 20;
+            // Not enough space on right
+            left = viewportWidth - previewWidth - 20;
           }
         }
         
@@ -373,7 +373,7 @@ export default function Home() {
               maxHeight: `${previewHeight}px`,
             }}
           >
-            <div className="bg-white rounded-lg shadow-2xl border border-slate-200 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div className="rounded-lg shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
               <img 
                 src={url} 
                 alt="Preview"

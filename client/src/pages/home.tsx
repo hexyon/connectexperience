@@ -20,12 +20,14 @@ import {
   Flag,
   Mountain,
   Route,
-  Cloud
+  Cloud,
+  Maximize2
 } from "lucide-react";
 import type { StoryChapter } from "@shared/schema";
 
 export default function Home() {
   const [isUploading, setIsUploading] = useState(false);
+  const [hoveredImage, setHoveredImage] = useState<string | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -303,11 +305,20 @@ export default function Home() {
                       </div>
                       
                       <div className={index % 2 === 0 ? 'md:order-2' : 'md:order-1'}>
-                        <img 
-                          src={chapter.imageUrl} 
-                          alt={`Chapter ${chapter.chapterNumber}`}
-                          className="w-full h-64 md:h-80 object-cover rounded-xl shadow-md"
-                        />
+                        <div 
+                          className="relative group cursor-pointer"
+                          onMouseEnter={() => setHoveredImage(chapter.imageUrl)}
+                          onMouseLeave={() => setHoveredImage(null)}
+                        >
+                          <img 
+                            src={chapter.imageUrl} 
+                            alt={`Chapter ${chapter.chapterNumber}`}
+                            className="w-full h-64 md:h-80 object-cover rounded-xl shadow-md transition-all duration-200"
+                          />
+                          <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 rounded-xl transition-all duration-200 flex items-center justify-center">
+                            <Maximize2 className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </CardContent>
@@ -318,6 +329,29 @@ export default function Home() {
         ) : null}
       </main>
 
+      {/* Image Zoom Modal */}
+      {hoveredImage && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75 p-4"
+          onMouseLeave={() => setHoveredImage(null)}
+        >
+          <div className="relative max-w-7xl max-h-[90vh] w-auto h-auto">
+            <img 
+              src={hoveredImage} 
+              alt="Zoomed view"
+              className="max-w-full max-h-[90vh] w-auto h-auto object-contain rounded-lg shadow-2xl"
+            />
+            <button
+              onClick={() => setHoveredImage(null)}
+              className="absolute top-4 right-4 bg-white bg-opacity-90 hover:bg-opacity-100 text-slate-900 rounded-full p-2 transition-all duration-200 shadow-lg"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

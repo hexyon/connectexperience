@@ -27,7 +27,7 @@ import type { StoryChapter } from "@shared/schema";
 
 export default function Home() {
   const [isUploading, setIsUploading] = useState(false);
-  const [hoveredImage, setHoveredImage] = useState<string | null>(null);
+  const [hoveredImage, setHoveredImage] = useState<{ url: string; rect: DOMRect } | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -307,7 +307,10 @@ export default function Home() {
                       <div className={index % 2 === 0 ? 'md:order-2' : 'md:order-1'}>
                         <div 
                           className="relative group cursor-pointer"
-                          onMouseEnter={() => setHoveredImage(chapter.imageUrl)}
+                          onMouseEnter={(e) => {
+                            const rect = e.currentTarget.getBoundingClientRect();
+                            setHoveredImage({ url: chapter.imageUrl, rect });
+                          }}
                           onMouseLeave={() => setHoveredImage(null)}
                         >
                           <img 
@@ -329,29 +332,53 @@ export default function Home() {
         ) : null}
       </main>
 
-      {/* Image Zoom Modal */}
-      {hoveredImage && (
-        <div 
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75 p-4"
-          onMouseLeave={() => setHoveredImage(null)}
-        >
-          <div className="relative max-w-7xl max-h-[90vh] w-auto h-auto">
-            <img 
-              src={hoveredImage} 
-              alt="Zoomed view"
-              className="max-w-full max-h-[90vh] w-auto h-auto object-contain rounded-lg shadow-2xl"
-            />
-            <button
-              onClick={() => setHoveredImage(null)}
-              className="absolute top-4 right-4 bg-white bg-opacity-90 hover:bg-opacity-100 text-slate-900 rounded-full p-2 transition-all duration-200 shadow-lg"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
+      {/* Image Hover Preview - macOS Style */}
+      {hoveredImage && (() => {
+        const { url, rect } = hoveredImage;
+        const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
+        
+        // Position to the right of the image
+        const previewWidth = Math.min(600, viewportWidth * 0.4);
+        const previewHeight = Math.min(700, viewportHeight * 0.7);
+        
+        let left = rect.right + 20;
+        let top = rect.top + (rect.height / 2) - (previewHeight / 2);
+        
+        // If too far right, show on left side
+        if (left + previewWidth > viewportWidth - 20) {
+          left = rect.left - previewWidth - 20;
+        }
+        
+        // If too far left, center it
+        if (left < 20) {
+          left = Math.max(20, (viewportWidth - previewWidth) / 2);
+        }
+        
+        // Keep within viewport vertically
+        top = Math.max(20, Math.min(top, viewportHeight - previewHeight - 20));
+        
+        return (
+          <div 
+            className="fixed z-50 pointer-events-none"
+            style={{
+              left: `${left}px`,
+              top: `${top}px`,
+              width: `${previewWidth}px`,
+              maxHeight: `${previewHeight}px`,
+            }}
+          >
+            <div className="bg-white rounded-lg shadow-2xl border border-slate-200 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+              <img 
+                src={url} 
+                alt="Preview"
+                className="w-full h-auto object-contain"
+                style={{ maxHeight: `${previewHeight}px` }}
+              />
+            </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
     </div>
   );
 }

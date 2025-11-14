@@ -364,24 +364,20 @@ export default function Home() {
         top = Math.max(20, Math.min(top, viewportHeight - previewHeight - 20));
         
         return (
-          <div 
-            className="fixed z-50 pointer-events-none"
+          <img 
+            src={url} 
+            alt="Preview"
+            className="fixed z-50 pointer-events-none rounded-lg shadow-2xl animate-in fade-in zoom-in-95 duration-200"
             style={{
               left: `${left}px`,
               top: `${top}px`,
-              width: `${previewWidth}px`,
+              maxWidth: `${previewWidth}px`,
               maxHeight: `${previewHeight}px`,
+              width: 'auto',
+              height: 'auto',
+              objectFit: 'contain'
             }}
-          >
-            <div className="rounded-lg shadow-2xl animate-in fade-in zoom-in-95 duration-200">
-              <img 
-                src={url} 
-                alt="Preview"
-                className="w-full h-auto object-contain rounded-lg"
-                style={{ maxHeight: `${previewHeight}px` }}
-              />
-            </div>
-          </div>
+          />
         );
       })()}
     </div>

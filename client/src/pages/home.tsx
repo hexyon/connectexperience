@@ -373,11 +373,11 @@ export default function Home() {
               maxHeight: `${previewHeight}px`,
             }}
           >
-            <div className="rounded-lg shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div className="rounded-lg shadow-2xl animate-in fade-in zoom-in-95 duration-200">
               <img 
                 src={url} 
                 alt="Preview"
-                className="w-full h-auto object-contain"
+                className="w-full h-auto object-contain rounded-lg"
                 style={{ maxHeight: `${previewHeight}px` }}
               />
             </div>
